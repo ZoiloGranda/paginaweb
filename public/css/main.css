@@ -1,0 +1,63 @@
+body{
+	font-family: 'Lato', sans-serif;
+}
+img{
+	max-width: 100%;
+}
+.quitar-float{
+	float: none;
+}
+.espacio-arriba{
+	margin-top: 6em;
+}
+.baloo{
+	font-family: 'Baloo Bhaina', cursive;
+}
+.grande{
+	font-size: 4em;
+}
+.azul {
+	color: #004358
+}
+a,.verde{
+	color: #1F8A70
+}
+.espacio-derecha{
+	margin-right: 1em;
+}
+.no-lista{
+	margin: 0px;
+	padding: 0px;
+}
+.no-lista li{
+	list-style-type: none;
+}
+.se-gris{
+	background-color: #eee;
+}
+.padding-largo{
+	padding: 5px 10px;
+}
+.inline-block{
+	float: none;
+	/*inline-block añade espacio a la derecha por defecto
+	por eso se usa margin-right -4px, para eliminar ese espacio*/
+	display: inline-block;
+	margin-right: -4px;
+}
+.vete-arriba{
+	vertical-align: top;
+}
+.mediano{
+	font-size: 1.5em
+}
+.retraso-1{
+	-webkit-animation-delay: 1s;
+	-moz-animation-delay: 1s;
+	animation-delay: 1s;
+}
+.retraso-2{
+	-webkit-animation-delay: 2s;
+	-moz-animation-delay: 2s;
+	animation-delay: 2s;
+}
