@@ -32,9 +32,22 @@ cloudinary.config({
 });
 //  con esta funcion se crea la aplicacion, y se asigna a la variable app, para poder accederla
 var app = express();
-//conexion de mongoose con la base de datos, se conecta con la URI de mongolab cuando esta en produccion
-// o sino esta en produccion se conecta con la base de datos local
-mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/primera');
+
+// Here we find an appropriate database to connect to, defaulting to
+    // localhost if we don't find one.
+    var uristring =
+    process.env.MONGOLAB_URI ||
+    process.env.MONGOHQ_URL ||
+    'mongodb://localhost/primera';
+
+        mongoose.connect(uristring, function(err, res) {
+      if (err) {
+      console.log ('ERROR connecting to: ' + uristring + '. ' + err);
+      } else {
+      console.log ('Succeeded connected to: ' + uristring);
+      }
+    });
+
 //se configura method-override para que reciba los parametros _method desde las vistas
 app.use(methodOverride('_method'));
 app.use(favicon(__dirname + '/public/img/favicon.ico'));
