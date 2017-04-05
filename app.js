@@ -1,5 +1,5 @@
 //  se requieren las dependencias
-console.log(process.cwd);
+console.log(process.cwd());
 var express = require(process.cwd('express'));
 // mongoose es la libreria de node para conectarse con mongodb
 var mongoose = require('mongoose');
