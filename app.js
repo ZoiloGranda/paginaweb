@@ -1,5 +1,5 @@
 //  se requieren las dependencias
-var express = require('node_modules/express');
+var express = require(process.cwd('express'));
 // mongoose es la libreria de node para conectarse con mongodb
 var mongoose = require('mongoose');
 // el bodyparser es necesario para leer las respuestas del servidor de una forma sencilla
