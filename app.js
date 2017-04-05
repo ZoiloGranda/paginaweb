@@ -13,6 +13,9 @@ var cloudinary = require('cloudinary');
 var upload = multer({dest: 'uploads/'});
 //libreria para sobreescribir los metodos http no soportados por los navegadores
 var methodOverride = require('method-override');
+//middleware para cargar el favicon
+var favicon = require('serve-favicon');
+
 //este schema se crea asi para poder agregarle atributos virtuales
 //losatributos virtuales son atributos que no se guardan como tal en la base de datos
 var Schema = mongoose.Schema;
@@ -29,9 +32,10 @@ cloudinary.config({
 });
 //  con esta funcion se crea la aplicacion, y se asigna a la variable app, para poder accederla
 var app = express();
+mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/primera');
 //se configura method-override para que reciba los parametros _method desde las vistas
 app.use(methodOverride('_method'));
-mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/primera');
+app.use(favicon(__dirname + '/public/img/favicon.ico'));
 
 var middlewareUpload = upload.single('image');
 /** bodyParser.urlencoded(options)
