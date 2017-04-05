@@ -21,7 +21,7 @@ var favicon = require('serve-favicon');
 var Schema = mongoose.Schema;
 var appPassword=12345;
 //el port se especifica asi, que quiere decir que el puerto lo coloque el servidor, y sino lo coloca, entonces usa el puerto 8080
-var port=process.env.PORT || 8080;
+//var port=process.env.PORT || 8080;
 
 // para conectar mongoose a la base de datos
 // configuracion inicial de cloudinary, estos valores se sacan del usuario que se crea en la pagina de cloudinary
@@ -32,6 +32,8 @@ cloudinary.config({
 });
 //  con esta funcion se crea la aplicacion, y se asigna a la variable app, para poder accederla
 var app = express();
+//conexion de mongoose con la base de datos, se conecta con la URI de mongolab cuando esta en produccion
+// o sino esta en produccion se conecta con la base de datos local
 mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/primera');
 //se configura method-override para que reciba los parametros _method desde las vistas
 app.use(methodOverride('_method'));
@@ -249,6 +251,5 @@ app.delete('/menu/:id', function(req, res) {
 //se usa solo app.listen(8080); cuando es local
 //app.listen(8080);
 // cuando es para produccion, se usa asi, en conjunto con la variable port que se declara al principio.
-app.listen(port, function() {
-  console.log(port);
-});
+app.listen(process.env.PORT || 8888);
+
