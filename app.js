@@ -246,5 +246,5 @@ app.delete('/menu/:id', function(req, res) {
 //app.listen(8080);
 // cuando es para produccion, se usa asi, en conjunto con la variable port que se declara al principio.
 app.listen(port, function() {
-  console.log('app running');
+  console.log(port);
 });
