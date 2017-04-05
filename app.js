@@ -238,6 +238,10 @@ app.get('/menu/new', function(req, res) {
   res.render('menu/new');
 });
 
+app.get('/contacto', function(req, res) {
+  res.render('contacts');
+});
+
 app.get('/menu/delete/:id', function(req, res) {
   var id=req.params.id;
   Product.findOne({'_id': id}, function(err, producto) {
