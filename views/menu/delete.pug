@@ -1,0 +1,13 @@
+extends ../layout.pug
+block contenido
+  div(class='col-md-5 center-block quitar-float top-space text-left')
+    h1 Eliminar #[span=producto.title]
+    //- '?_method=PUT' sirve para decirle al servidor que en realidad se esta enviando un metodo PUT, y no un POST
+    //-  se usa asi porque los navegadores no soportan el metodo PUT en un form
+    //- el _method es lo que lee el method-override en la app.js
+    form(method='post' action='/menu/'+producto.id+'?_method=DELETE' style='margin-top:1.5em;')
+      div(class='form-group')
+        label Contraseña
+        input(type='password' name='password' placeholder='Password' class='form-control')
+      div(class='form-group text-right')
+        input(type='submit' class='btn btn-info' value='Guardar')

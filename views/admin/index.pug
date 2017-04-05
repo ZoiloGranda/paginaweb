@@ -1,0 +1,26 @@
+extends ../layout.pug
+block contenido
+	h1 Panel de Administración
+	table(class="table")
+		caption Productos Actuales
+		thead
+			tr
+				th #
+				th Nombre
+				th Descripción
+				th Precio
+				th Imagenes
+				th Acciones
+		tbody
+			each product in products
+				tr
+					td= product.id
+					td= product.title
+					td= product.description
+					td= product.pricing
+					td
+						a(href=product.imageUrl class="btn") Ver Imagenes
+					td
+						a(href="menu/edit/"+product.id) Editar
+						=" - "
+						a(href="menu/delete/"+product.id) Eliminar
