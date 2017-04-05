@@ -31,7 +31,7 @@ cloudinary.config({
 var app = express();
 //se configura method-override para que reciba los parametros _method desde las vistas
 app.use(methodOverride('_method'));
-mongoose.connect('mongodb://localhost/primera');
+mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/primera');
 
 var middlewareUpload = upload.single('image');
 /** bodyParser.urlencoded(options)
