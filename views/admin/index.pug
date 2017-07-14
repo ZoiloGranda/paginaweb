@@ -1,6 +1,7 @@
 extends ../layout.pug
 block contenido
 	h1 Panel de Administración
+	a(href="/menu/new" class="btn") Agregar Nuevo Producto
 	table(class="table")
 		caption Productos Actuales
 		thead
@@ -19,7 +20,7 @@ block contenido
 					td= product.description
 					td= product.pricing
 					td
-						a(href=product.imageUrl class="btn") Ver Imagenes
+						a(href=product.imageUrl, class="btn") Ver Imagen
 					td
 						a(href="menu/edit/"+product.id) Editar
 						=" - "

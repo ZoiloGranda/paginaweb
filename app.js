@@ -10,16 +10,17 @@ var multer = require('multer');
 var cloudinary = require('cloudinary');
 // se le pasa el parametro dest que es el destino donde va a guardar la imagenes
 // antes de subirlas a cloudinary, en este caso se van a guardar en la carpeta uploads
-var upload = multer({dest: 'uploads/'});
+var upload = multer({ dest: 'uploads/' });
 //libreria para sobreescribir los metodos http no soportados por los navegadores
 var methodOverride = require('method-override');
 //middleware para cargar el favicon
 var favicon = require('serve-favicon');
+var fs = require('fs');
 
 //este schema se crea asi para poder agregarle atributos virtuales
 //losatributos virtuales son atributos que no se guardan como tal en la base de datos
 var Schema = mongoose.Schema;
-var appPassword=12345;
+var appPassword = 12345;
 //el port se especifica asi, que quiere decir que el puerto lo coloque el servidor, y sino lo coloca, entonces usa el puerto 8080
 //var port=process.env.PORT || 8080;
 
@@ -33,20 +34,11 @@ cloudinary.config({
 //  con esta funcion se crea la aplicacion, y se asigna a la variable app, para poder accederla
 var app = express();
 
-// Here we find an appropriate database to connect to, defaulting to
-    // localhost if we don't find one.
-    var uristring =
-    process.env.MONGOLAB_URI ||
-    process.env.MONGOHQ_URL ||
-    'mongodb://localhost/primera';
-
-        mongoose.connect(uristring, function(err, res) {
-      if (err) {
-      console.log ('ERROR connecting to: ' + uristring + '. ' + err);
-      } else {
-      console.log ('Succeeded connected to: ' + uristring);
-      }
-    });
+mongoose.connect('mongodb://gamestore:gamestore@ds157342.mlab.com:57342/gamestoredb');
+const db = mongoose.connection;
+db
+  .on('error',()=> console.log('Fallo la conexion a la base de datos'))
+  .once('open',()=> console.log('Conectado a la base de datos'))  
 
 //se configura method-override para que reciba los parametros _method desde las vistas
 app.use(methodOverride('_method'));
@@ -57,13 +49,13 @@ var middlewareUpload = upload.single('image');
  * Parses the text as URL encoded data (which is how browsers tend to send form data from regular forms set to POST)
  * and exposes the resulting object (containing the keys and values) on req.body
  */
- app.use(bodyParser.urlencoded({
+app.use(bodyParser.urlencoded({
   extended: true,
 }));
 /**bodyParser.json(options)
  * Parses the text as JSON and exposes the resulting object on req.body.
  */
- app.use(bodyParser.json());
+app.use(bodyParser.json());
 // definir schema del producto
 var productSchemaJSON = {
   title: String,
@@ -75,14 +67,15 @@ var productSchemaJSON = {
 var productSchema = new Schema(productSchemaJSON);
 //crea un atributo virtual, llamado imageUrl
 //va a ser del tipo get
-productSchema.virtual('imageUrlVirtual').get(function() {
+/*productSchema.virtual('imageUrlVirtual').get(function() {
+  console.log('this.imageUrl',this.imageUrl)
   //primero se valida si no se cargó  una imagen cuando se creó el producto
   //si no se cargó imagen, entonces se utiliza una imagen por defecto
-if (this.imageUrl===''|| this.imageUrl==='imagen.png') {
-  return 'default.jpg';
-}
-return this.imageUrl;
-});
+  if (!this.imageUrl) {
+    return 'http://res.cloudinary.com/zgranda/image/upload/v1490921578/xjntd1xi2cg4x73fblxf.jpg';
+  }
+  return this.imageUrl;
+});*/
 // inicia el modelo producto con el productschema
 var Product = mongoose.model('Product', productSchema);
 // se coloca a pug como administrador de vistas
@@ -94,6 +87,26 @@ app.set('view engine', 'pug');
 // como parametro ('public')
 // al cargar la carpeta public, se puede acceder a su contenido de manera relativa
 app.use(express.static('public'));
+//removeFiles(`${__dirname}/uploads/`);
+
+function removeUploadedFiles(dirPath, removeSelf) {
+  if (removeSelf === undefined)
+    removeSelf = true;
+  try {
+    var files = fs.readdirSync(dirPath); } catch (e) {
+    return; }
+  if (files.length > 0)
+    for (var i = 0; i < files.length; i++) {
+      var filePath = dirPath + '/' + files[i];
+      if (fs.statSync(filePath).isFile())
+        fs.unlinkSync(filePath);
+      else
+        rmDir(filePath);
+    }
+  if (removeSelf)
+    fs.rmdirSync(dirPath);
+};
+
 //  se acepta una peticion por el metodo http get en la ruta '/'
 //  req es la solicitud del usuario, donde esta toda la informacion que envia el usuario
 //  res es la respuesta del servidor a la solicitud
@@ -102,7 +115,6 @@ app.get('/', function(req, res) {
   res.render('index');
   //  send envia informacion al usuario, send termina la respuesta, no hace falta llamar a end despues
   //  res.send('hola');
-
   //  res.end termina la respuesta del servidor, si no se coloca, se queda cargando el navegador
   //  res.end('hola mundo');
 });
@@ -115,7 +127,7 @@ app.get('/menu', function(req, res) {
     };
     //render tambien puede recibir como parametros variables locales  en forma de objeto,
     //en este caso recibe los documentos devueltos por product.find
-    res.render('menu/index', {products: documento});
+    res.render('menu/index', { products: documento });
   });
 });
 
@@ -129,41 +141,41 @@ app.put('/menu/:id', middlewareUpload, function(req, res) {
     };
     if (req.file) {
       //se llama a la funcion de cloudinary para subir imagenes
-    //el primer parametro es la direccion del archivo que se va a subir, en este caso
-    //la direccion esta guardada en la propiedad path del objeto image que crea multer
-    //luego de subir la imagen, se corre la funcion con result informando el resultado
-    //console.log(req.file);
-    cloudinary.uploader.upload(req.file.path, function(result) {
-      // se guarda en la base de datos, el parametro err es por si da error
-      //result se trae la url en donde va a quedar subida la imagen, y esa es la url
-      //que se va a guardar en mongo como url de la imagen del producto
-      data.imageUrl = result.url;
-      //update para actualizar un elemento
-      //el primer parametro es la id del elemento que se va a actualizar
-      //el segundo parametro son los nuevos datos que va a actualizar
-      //y el tercero el callback
-      Product.update({'_id': req.params.id}, data, function(err, success) {
+      //el primer parametro es la direccion del archivo que se va a subir, en este caso
+      //la direccion esta guardada en la propiedad path del objeto image que crea multer
+      //luego de subir la imagen, se corre la funcion con result informando el resultado
+      //console.log(req.file);
+      cloudinary.uploader.upload(req.file.path, function(result) {
+        // se guarda en la base de datos, el parametro err es por si da error
+        //result se trae la url en donde va a quedar subida la imagen, y esa es la url
+        //que se va a guardar en mongo como url de la imagen del producto
+        data.imageUrl = result.url;
+        //update para actualizar un elemento
+        //el primer parametro es la id del elemento que se va a actualizar
+        //el segundo parametro son los nuevos datos que va a actualizar
+        //y el tercero el callback
+        Product.update({ '_id': req.params.id }, data, function(err, success) {
+          res.redirect('/menu');
+        });
+      });
+    } else {
+      Product.update({ '_id': req.params.id }, data, function() {
         res.redirect('/menu');
       });
-    });
-  }else{
-    Product.update({'_id': req.params.id}, data, function() {
-      res.redirect('/menu');
-    });
-  };
-}else {
-  res.redirect('/');
-}
+    };
+  } else {
+    res.redirect('/');
+  }
 });
 
 //:id se pasa asi porque es un parametro que viene en la url que cambia con cada elemento de la base de datos
 app.get('/menu/edit/:id', function(req, res) {
   //a traves de params se accede a los parametros de la url
-  var id_producto=req.params.id;
+  var id_producto = req.params.id;
   //findone es para buscar en la base de datos, en el modelo Product, el elemento que cumpla con los parametros que se le pasan
   //aqui se busca en el campo _id el id_producto
-  Product.findOne({'_id': id_producto}, function(error, producto) {
-    res.render('menu/edit', {product: producto});
+  Product.findOne({ '_id': id_producto }, function(error, producto) {
+    res.render('menu/edit', { product: producto });
   });
 });
 
@@ -173,11 +185,11 @@ app.post('/admin', function(req, res) {
       if (error) {
         console.log(error);
       };
-    //render tambien puede recibir como parametros variables locales  en forma de objeto,
-    //en este caso recibe los documentos devueltos por product.find
-    res.render('admin/index', {products: documento});
-  });
-  } else{
+      //render tambien puede recibir como parametros variables locales  en forma de objeto,
+      //en este caso recibe los documentos devueltos por product.find
+      res.render('admin/index', { products: documento });
+    });
+  } else {
     res.redirect('/');
   }
 });
@@ -204,30 +216,30 @@ app.post('/menu', upload.single('image'), function(req, res) {
     var product = new Product(data);
     if (req.file) {
       //se llama a la funcion de cloudinary para subir imagenes
-    //el primer parametro es la direccion del archivo que se va a subir, en este caso
-    //la direccion esta guardada en la propiedad path del objeto image que crea multer
-    //luego de subir la imagen, se corre la funcion con result informando el resultado
-    //console.log(req.file);
-    cloudinary.uploader.upload(req.file.path, function(result) {
-      // se guarda en la base de datos, el parametro err es por si da error
-      //result se trae la url en donde va a quedar subida la imagen, y esa es la url
-      //que se va a guardar en mongo como url de la imagen del producto
-      product.imageUrl = result.url;
+      //el primer parametro es la direccion del archivo que se va a subir, en este caso
+      //la direccion esta guardada en la propiedad path del objeto image que crea multer
+      //luego de subir la imagen, se corre la funcion con result informando el resultado
+      //console.log(req.file);
+      cloudinary.uploader.upload(req.file.path, function(result) {
+        // se guarda en la base de datos, el parametro err es por si da error
+        //result se trae la url en donde va a quedar subida la imagen, y esa es la url
+        //que se va a guardar en mongo como url de la imagen del producto
+        product.imageUrl = result.url;
+        product.save(function(err) {
+          removeUploadedFiles(`${__dirname}/uploads/`, false);
+          // luego de la operacion redirige al index
+          res.redirect('/menu');
+        });
+      });
+    } else {
+      //si no se sube una imagen para el producto, usa esta por defecto
+      product.imageUrl = 'http://res.cloudinary.com/zgranda/image/upload/v1490921578/xjntd1xi2cg4x73fblxf.jpg';
       product.save(function(err) {
-        console.log(product);
         // luego de la operacion redirige al index
         res.redirect('/menu');
       });
-      console.log(result);
-    });
-  }else {
-    product.save(function(err) {
-      console.log(product);
-        // luego de la operacion redirige al index
-        res.redirect('/menu');
-      });
-  }
-}else {
+    }
+  } else {
     // si el
     res.render('menu/new');
   };
@@ -243,30 +255,32 @@ app.get('/contacto', function(req, res) {
 });
 
 app.get('/menu/delete/:id', function(req, res) {
-  var id=req.params.id;
-  Product.findOne({'_id': id}, function(err, producto) {
+  var id = req.params.id;
+  Product.findOne({ '_id': id }, function(err, producto) {
     //el segundo parametro de render son variables que se le pasan al front end
-    res.render('menu/delete', {producto: producto});
+    res.render('menu/delete', { producto: producto });
   });
 });
 
 app.delete('/menu/:id', function(req, res) {
-  var id=req.params.id;
+  var id = req.params.id;
   if (req.body.password == appPassword) {
     //el metodo removo de mongoose para eliminar elementos de la base de datos
-    Product.remove({'_id': id}, function(err) {
-      if(err) {
+    Product.remove({ '_id': id }, function(err) {
+      if (err) {
         console.log(err);
       }
     });
     res.redirect('/menu');
-  }else {
+  } else {
     res.redirect('/menu');
   }
 });
+
 //  se asigna el puerto en el que va a escuchar la aplicacion
 //se usa solo app.listen(8080); cuando es local
 //app.listen(8080);
-// cuando es para produccion, se usa asi, en conjunto con la variable port que se declara al principio.
-app.listen(process.env.PORT || 8888);
-
+// cuando es para produccion, se usa asi
+app.listen(process.env.PORT || 8888, () => {
+  console.log(`aplicacion corriendo en el puerto ${process.env.PORT || 8888}`)
+});

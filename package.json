@@ -4,8 +4,11 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "nodemon app.js"
   },
+  "engines" : {
+    "node" : "7.6.0"
+    },
   "author": "",
   "license": "ISC",
   "devDependencies": {
