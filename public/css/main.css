@@ -1,8 +1,6 @@
 body{
 	font-family: 'Lato', sans-serif;
-}
-img{
-	max-width: 100%;
+	padding-bottom: 1em;
 }
 .quitar-float{
 	float: none;
@@ -60,4 +58,10 @@ a,.verde{
 	-webkit-animation-delay: 2s;
 	-moz-animation-delay: 2s;
 	animation-delay: 2s;
+}
+.imgsize{
+	min-width: 200px;
+	min-height: 250px;
+	max-width: 200px;
+	max-height: 250px;
 }
